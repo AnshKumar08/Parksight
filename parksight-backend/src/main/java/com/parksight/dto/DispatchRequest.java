@@ -1,4 +1,3 @@
-// src/main/java/com/parksight/dto/DispatchRequest.java
 package com.parksight.dto;
 
 import com.fasterxml.jackson.annotation.JsonAlias;
