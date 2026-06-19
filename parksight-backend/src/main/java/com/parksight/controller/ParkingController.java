@@ -1,4 +1,3 @@
-// src/main/java/com/parksight/controller/ParkingController.java
 package com.parksight.controller;
 
 import com.parksight.dto.DispatchRequest;
