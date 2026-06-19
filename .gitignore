@@ -1,0 +1,12 @@
+# Environments
+env/
+venv/
+.env
+
+# Data and Training
+*.csv
+train.py
+
+# Python Cache
+__pycache__/
+*.pyc
