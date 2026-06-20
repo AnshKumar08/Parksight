@@ -208,7 +208,7 @@ const TacticalDashboard = () => {
             style={{ background: T.accent }}
           >
             <Activity size={14} className="animate-pulse" />
-            ACTIVE FORECASTS: {hotspots.length > 0 ? String(hotspots.length).padStart(2, '0') : '05'}
+            ACTIVE FORECASTS: {hotspots.length > 0 ? String(hotspots.length).padStart(2, '0') : '—'}
           </div>
         </div>
       </header>
