@@ -119,7 +119,7 @@ const TacticalDashboard = () => {
       setLastUpdate(new Date().toLocaleTimeString('en-US', { hour12: false }) + ' UTC');
     } catch (error) {
       console.error("Failed to fetch predictions:", error);
-      alert("API Connection Error: Ensure both Spring Boot (8080) and Python API (8000) are running.");
+      alert("Unable to connect to the forecasting servers. Retrying connection...");
     }
     setLoading(false);
   };
