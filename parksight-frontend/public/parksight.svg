@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="32" height="32">
+  <!-- Dark square background -->
+  <rect width="32" height="32" rx="6" fill="#1a1a1a"/>
+
+  <!-- Teal corner accent (top-left) -->
+  <line x1="2" y1="2" x2="8" y2="2" stroke="#009B97" stroke-width="2.5" stroke-linecap="square"/>
+  <line x1="2" y1="2" x2="2" y2="8" stroke="#009B97" stroke-width="2.5" stroke-linecap="square"/>
+
+  <!-- Bold "P" letter -->
+  <text
+    x="16"
+    y="22"
+    text-anchor="middle"
+    font-family="Arial Black, sans-serif"
+    font-weight="900"
+    font-size="18"
+    fill="#f0f0f0"
+    letter-spacing="-1"
+  >P</text>
+
+  <!-- Small teal dot (bottom-right accent) -->
+  <circle cx="27" cy="26" r="2.5" fill="#009B97"/>
+</svg>
