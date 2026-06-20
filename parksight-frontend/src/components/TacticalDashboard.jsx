@@ -169,7 +169,7 @@ const TacticalDashboard = () => {
 
   return (
     <div
-      className="min-h-screen font-mono flex flex-col transition-colors duration-300"
+      className="h-screen font-mono flex flex-col overflow-hidden transition-colors duration-300"
       style={{ background: T.bg, color: T.text }}
     >
       <Toaster position="top-right" />
@@ -346,7 +346,7 @@ const TacticalDashboard = () => {
       </div>
 
       <section
-        className="border-t-2 px-6 pt-5 pb-6 flex-grow"
+        className="border-t-2 px-6 pt-5 pb-6 flex-grow overflow-y-auto"
         style={{ background: T.tableBg, borderColor: T.border }}
       >
         <p className="text-base font-black uppercase tracking-widest mb-4" style={{ color: T.text }}>
