@@ -1,18 +1,24 @@
 package com.parksight.service;
 
+import org.springframework.beans.factory.annotation.Value;
 import com.parksight.dto.DispatchRequest;
 import com.parksight.dto.DispatchResponse;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 
+import java.util.ArrayList;
+
 @Service
 public class ParkingService {
 
-    private static final String PYTHON_API_URL = "http://localhost:8000/predict_hotspots";
+    @Value("${python.api.url}")
+    private String pythonApiUrl;
+
     private final RestTemplate restTemplate;
 
     public ParkingService() {
@@ -25,12 +31,16 @@ public class ParkingService {
 
         HttpEntity<DispatchRequest> entity = new HttpEntity<>(request, headers);
 
-        ResponseEntity<DispatchResponse> response = restTemplate.postForEntity(
-                PYTHON_API_URL,
-                entity,
-                DispatchResponse.class
-        );
+        try {
+            ResponseEntity<DispatchResponse> response = restTemplate.postForEntity(
+                    pythonApiUrl,
+                    entity,
+                    DispatchResponse.class);
+            return response.getBody();
 
-        return response.getBody();
+        } catch (RestClientException e) {
+            System.err.println("CRITICAL: Python ML Engine failed to respond - " + e.getMessage());
+            return new DispatchResponse(request.targetTime(), new ArrayList<>());
+        }
     }
 }

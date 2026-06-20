@@ -1,0 +1,6 @@
+fastapi>=0.110.0
+uvicorn>=0.28.0
+catboost==1.2.5
+pandas==2.2.2
+numpy<2.0.0
+pydantic>=2.6.4
