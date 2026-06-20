@@ -99,7 +99,7 @@ const TacticalDashboard = () => {
     setLoading(true);
     try {
       const formattedTime = targetTime.replace('T', ' ') + ':00';
-      const response = await fetch('https://parksight-backend-sypc.onrender.com//api/v1/dispatch/predict', {
+      const response = await fetch('https://parksight-backend-sypc.onrender.com/api/v1/dispatch/predict', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ targetTime: formattedTime }),
