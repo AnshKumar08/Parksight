@@ -22,20 +22,16 @@ const TacticalDashboard = () => {
   const [targetTime, setTargetTime] = useState('2024-05-10T10:00');
   const [hotspots, setHotspots] = useState([]);
   const [loading, setLoading] = useState(false);
-  // null = no prediction run yet → shows "—" in the UI
   const [commuterHours, setCommuterHours] = useState(null);
   const [carbonReduction, setCarbonReduction] = useState(null);
   const [lastUpdate, setLastUpdate] = useState("Waiting...");
   const [dark, setDark] = useState(true);
 
-  // ── RESIZE STATE ──────────────────────────────────────────────────────
-  // Vertical (map height) — drag bottom edge of map
   const [mapHeight, setMapHeight] = useState(380);
   const isResizingV = useRef(false);
   const vDragStartY = useRef(0);
   const vDragStartH = useRef(0);
 
-  // Horizontal (sidebar width) — drag right edge of sidebar
   const [sidebarW, setSidebarW] = useState(240);
   const isResizingH = useRef(false);
   const hDragStartX = useRef(0);
@@ -78,7 +74,6 @@ const TacticalDashboard = () => {
     };
   }, []);
 
-  // ── THEME ─────────────────────────────────────────────────────────────
   const ACCENT = '#009B97';
   const ACCENT_HOVER = '#00827E';
   const T = {
@@ -100,7 +95,6 @@ const TacticalDashboard = () => {
     footerText: dark ? '#6b7280' : '#9ca3af',
   };
 
-  // ── DATA FETCH ────────────────────────────────────────────────────────
   const runPrediction = async () => {
     setLoading(true);
     try {
@@ -114,9 +108,8 @@ const TacticalDashboard = () => {
       const top5 = data.recommended_dispatch_zones.slice(0, 5);
       setHotspots(top5);
 
-      // Cap carbon reduction at 15% as in the original logic
-      const COLLECTIVE_DELAY_PER_CAR = 30;   // hrs of city delay per illegally parked vehicle
-      const CITY_BASELINE_HRS = 5000; // daily baseline for carbon % calc
+      const COLLECTIVE_DELAY_PER_CAR = 30;
+      const CITY_BASELINE_HRS = 5000;
       const totalCars = top5.reduce((sum, s) => sum + s.predicted_violations, 0);
       const hoursSaved = Math.max(15, Math.round(totalCars * COLLECTIVE_DELAY_PER_CAR));
       const carbonPct = Math.min(15, parseFloat((hoursSaved / CITY_BASELINE_HRS * 100).toFixed(1)));
@@ -171,7 +164,6 @@ const TacticalDashboard = () => {
     ? 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png'
     : 'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png';
 
-  // Helper: display impact value or em-dash if no prediction yet
   const fmtHours = commuterHours === null ? '—' : commuterHours;
   const fmtCarbon = carbonReduction === null ? '—' : `${carbonReduction}%`;
 
@@ -182,7 +174,6 @@ const TacticalDashboard = () => {
     >
       <Toaster position="top-right" />
 
-      {/* ── HEADER ── */}
       <header
         className="flex justify-between items-center px-6 py-3 border-b-2 flex-shrink-0"
         style={{ background: T.headerBg, borderColor: T.border }}
@@ -202,7 +193,6 @@ const TacticalDashboard = () => {
         </div>
 
         <div className="flex items-center gap-4">
-          {/* Dark / Light toggle */}
           <button
             onClick={() => setDark(d => !d)}
             className="flex items-center gap-2 border px-3 py-1.5 text-xs font-black uppercase tracking-widest transition-colors"
@@ -213,7 +203,6 @@ const TacticalDashboard = () => {
             {dark ? 'Light' : 'Dark'}
           </button>
 
-          {/* Live anomalies badge */}
           <div
             className="flex items-center gap-2 text-white px-4 py-2 text-xs font-black tracking-widest uppercase"
             style={{ background: T.accent }}
@@ -224,15 +213,12 @@ const TacticalDashboard = () => {
         </div>
       </header>
 
-      {/* ── MAIN BODY (sidebar + map) ── */}
       <div className="flex overflow-hidden flex-shrink-0" style={{ height: mapHeight }}>
 
-        {/* ── LEFT SIDEBAR ── */}
         <aside
           className="flex-shrink-0 flex flex-col relative"
           style={{ width: sidebarW, background: T.sectionBg, borderRight: `2px solid ${T.border}` }}
         >
-          {/* Forecast Window */}
           <div className="border-b-2 p-4" style={{ borderColor: T.border }}>
             <p className="text-sm font-black uppercase tracking-widest mb-3" style={{ color: T.subtext }}>
               Forecast Window
@@ -261,7 +247,6 @@ const TacticalDashboard = () => {
             </button>
           </div>
 
-          {/* Anticipated Impact — side-by-side, green-themed */}
           <div
             className="p-4 flex flex-col gap-3 flex-grow overflow-auto"
             style={{ background: dark ? 'rgba(0,155,151,0.07)' : 'rgba(0,155,151,0.06)', borderTop: '2px solid rgba(0,155,151,0.3)' }}
@@ -271,7 +256,6 @@ const TacticalDashboard = () => {
               Anticipated Impact
             </p>
 
-            {/* ROI cards: 2-column grid so both fit without scrolling */}
             <div className="flex flex-col gap-2">
               <div
                 className="flex items-center gap-4 px-4 py-3"
@@ -295,7 +279,6 @@ const TacticalDashboard = () => {
               </div>
             </div>
 
-            {/* Show note only after prediction runs */}
             {commuterHours !== null && (
               <p className="text-[9px] leading-relaxed" style={{ color: '#009B97', opacity: 0.7 }}>
                 Based on {hotspots.reduce((s, h) => s + h.predicted_violations, 0).toFixed(1)} predicted violations
@@ -304,8 +287,6 @@ const TacticalDashboard = () => {
             )}
           </div>
 
-
-          {/* ── HORIZONTAL RESIZE STRIP (right edge of sidebar) ── */}
           <div
             onMouseDown={onMouseDownH}
             className="absolute top-0 right-0 h-full cursor-ew-resize"
@@ -314,9 +295,7 @@ const TacticalDashboard = () => {
           />
         </aside>
 
-        {/* ── MAP ── */}
         <main className="flex-1 relative overflow-hidden flex flex-col" style={{ height: '100%' }}>
-          {/* Map area */}
           <div style={{ flex: 1, position: 'relative', minHeight: 0 }}>
             <MapContainer
               center={[12.9716, 77.5946]}
@@ -357,7 +336,6 @@ const TacticalDashboard = () => {
             </MapContainer>
           </div>
 
-          {/* ── VERTICAL RESIZE STRIP (bottom edge of map) ── */}
           <div
             onMouseDown={onMouseDownV}
             className="w-full flex-shrink-0 cursor-ns-resize"
@@ -367,7 +345,6 @@ const TacticalDashboard = () => {
         </main>
       </div>
 
-      {/* ── BOTTOM: TABLE ── */}
       <section
         className="border-t-2 px-6 pt-5 pb-6 flex-grow"
         style={{ background: T.tableBg, borderColor: T.border }}
@@ -438,7 +415,6 @@ const TacticalDashboard = () => {
         </table>
       </section>
 
-      {/* ── FOOTER ── */}
       <footer
         className="flex justify-between items-center border-t-2 px-6 py-2 text-[10px] font-black uppercase tracking-widest flex-shrink-0"
         style={{ background: T.footerBg, borderColor: T.border, color: T.footerText }}
