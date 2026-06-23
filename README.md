@@ -97,7 +97,14 @@ The system uses a trained **CatBoost** regression model that predicts parking vi
 - NumPy
 - Pydantic
 
-**Cold Start Notice:** To conserve free-tier cloud resources, Render automatically spins down our backend containers after 15 minutes of inactivity. **If you are the first evaluator to trigger a prediction in a while, the initial request may take 30–60 seconds to wake the server.** Once awake, all subsequent ML inference and routing will execute in milliseconds.
+### Cold Start Notice
+
+> Render's free tier automatically suspends inactive services after 15 minutes.
+
+- First request after inactivity: **30–60 seconds** startup delay
+- Subsequent requests: **Normal response time**
+
+This affects only the first request used to wake the backend service.
 ---
 
 ## Deployment
