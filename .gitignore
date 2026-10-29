@@ -2,11 +2,14 @@
 env/
 venv/
 .env
-
+*.env
+node_modules/
 
 *.csv
 train.py
 
-
 __pycache__/
 *.pyc
+powershell.cmd
+**/powershell.cmd
+

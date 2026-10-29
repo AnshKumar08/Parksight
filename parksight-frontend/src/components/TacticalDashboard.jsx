@@ -98,28 +98,47 @@ const TacticalDashboard = () => {
   const runPrediction = async () => {
     setLoading(true);
     try {
-      const formattedTime = targetTime.replace('T', ' ') + ':00';
-      const response = await fetch('https://parksight-backend-sypc.onrender.com/api/v1/dispatch/predict', {
+      if (!targetTime) {
+        toast.error("Please select a target time window.");
+        setLoading(false);
+        return;
+      }
+      const formattedTime = targetTime.includes(':00', 14)
+        ? targetTime.replace('T', ' ')
+        : targetTime.replace('T', ' ') + ':00';
+
+      const apiBase = (import.meta.env.VITE_API_URL || 'https://parksight-backend-sypc.onrender.com').replace(/\/+$/, '');
+      const response = await fetch(`${apiBase}/api/v1/dispatch/predict`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ targetTime: formattedTime }),
       });
+
+      if (!response.ok) {
+        throw new Error(`Forecasting server returned status ${response.status}`);
+      }
+
       const data = await response.json();
+      if (!data || !Array.isArray(data.recommended_dispatch_zones)) {
+        throw new Error("Invalid response format received from forecasting service");
+      }
+
       const top5 = data.recommended_dispatch_zones.slice(0, 5);
       setHotspots(top5);
 
       const COLLECTIVE_DELAY_PER_CAR = 30;
       const CITY_BASELINE_HRS = 5000;
-      const totalCars = top5.reduce((sum, s) => sum + s.predicted_violations, 0);
+      const totalCars = top5.reduce((sum, s) => sum + (Number(s.predicted_violations) || 0), 0);
       const hoursSaved = Math.max(15, Math.round(totalCars * COLLECTIVE_DELAY_PER_CAR));
-      const carbonPct = Math.min(15, parseFloat((hoursSaved / CITY_BASELINE_HRS * 100).toFixed(1)));
+      const carbonPct = Math.min(15, parseFloat(((hoursSaved / CITY_BASELINE_HRS) * 100).toFixed(1)));
 
       setCommuterHours(hoursSaved);
       setCarbonReduction(carbonPct);
       setLastUpdate(new Date().toLocaleTimeString('en-US', { hour12: false }) + ' UTC');
+      toast.success("Prediction engine updated successfully!");
     } catch (error) {
       console.error("Failed to fetch predictions:", error);
-      alert("Unable to connect to the forecasting servers. Retrying connection...");
+      toast.error(error.message || "Unable to connect to the forecasting servers. Retrying connection...");
     }
     setLoading(false);
   };
@@ -160,9 +179,19 @@ const TacticalDashboard = () => {
     return `${day}-${month}-${year} ${time}`;
   };
 
-  const mapTile = dark
-    ? 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png'
-    : 'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png';
+  const cartoApiKey = import.meta.env.VITE_CARTO_API_KEY;
+  const tileUrl = cartoApiKey
+    ? (dark
+        ? `https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png?key=${cartoApiKey}`
+        : `https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png?key=${cartoApiKey}`)
+    : 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png';
+
+  const tileAttribution = cartoApiKey
+    ? '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>'
+    : '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors';
+
+  const tileClassName = (!cartoApiKey && dark) ? 'dark-tiles' : '';
+
 
   const fmtHours = commuterHours === null ? '—' : commuterHours;
   const fmtCarbon = carbonReduction === null ? '—' : `${carbonReduction}%`;
@@ -305,12 +334,22 @@ const TacticalDashboard = () => {
               style={{ height: '100%', background: T.bg }}
             >
               <TileLayer
-                key={mapTile}
-                url={mapTile}
-                attribution='&copy; <a href="https://carto.com/">CARTO</a>'
+                key={`${tileUrl}-${tileClassName}`}
+                url={tileUrl}
+                attribution={tileAttribution}
+                className={tileClassName}
+                maxZoom={19}
               />
               {hotspots.map((spot, idx) => {
-                const { latitude, longitude } = geohashDecoder.decode(spot.geohash);
+                if (!spot || !spot.geohash) return null;
+                let coords;
+                try {
+                  coords = geohashDecoder.decode(spot.geohash);
+                } catch {
+                  return null;
+                }
+                if (!coords || isNaN(coords.latitude) || isNaN(coords.longitude)) return null;
+                const { latitude, longitude } = coords;
                 const radius = idx === 0 ? 16 : idx <= 2 ? 11 : 8;
                 return (
                   <CircleMarker
@@ -327,7 +366,7 @@ const TacticalDashboard = () => {
                     <Popup>
                       <div className="text-center font-bold text-xs">
                         Hotspot {idx + 1}<br />
-                        <span className="text-gray-500">Traffic Surge: {Math.round(spot.predicted_violations * 100)}%</span>
+                        <span className="text-gray-500">Traffic Surge: {Math.round((Number(spot.predicted_violations) || 0) * 100)}%</span>
                       </div>
                     </Popup>
                   </CircleMarker>
